@@ -113,7 +113,7 @@ void moveTruckTowTogether(void) {
 		else {
 			printTruck((-1*i)-16);
 		}
-		usleep(72000);
+		nanosleep((const struct timespec[]){{0, 72000000L}}, NULL);
 	}
 	getch();
 	printCity();
@@ -206,7 +206,7 @@ void moveTruckForward(const int limit) {
 		wclear(truck_win);
 		wrefresh(truck_win);
 		(i >= 0) ? (mvwin(truck_win,5,i) ,printTruck(0)) : printTruck(i*-1);
-		usleep(72000);
+		nanosleep((const struct timespec[]){{0, 72000000L}}, NULL);
 	}
 	if(limit < 0) {
 		printCity();
@@ -226,7 +226,7 @@ void moveTowTruckBackwards(void) {
 		wrefresh(tow_win);
 		mvwin(tow_win,5,i);
 		printTowTruck(0);
-		usleep(72000);
+		nanosleep((const struct timespec[]){{0, 72000000L}}, NULL);
 	}
 }
 
@@ -235,7 +235,7 @@ void moveTowTruckForward(void) {
 		wclear(tow_win);
 		wrefresh(tow_win);
 		(i >= 0) ? (mvwin(tow_win,5,i),printTowTruck(0)) : printTowTruck(i*-1);
-		usleep(72000);
+		nanosleep((const struct timespec[]){{0, 72000000L}}, NULL);
 	}
 	getch();
 }
