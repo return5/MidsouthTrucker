@@ -1,24 +1,12 @@
 /*------------------------ headers ------------------------------*/
-
-#include <stdlib.h>
-#include <string.h> 
-#include "gamepieces.h"
-
-/*------------------------ prototypes ---------------------------*/
-
-void initTown(const int index,const int x, const int y,const char *const name);
-void makeConnections(const int index,const int size,const int *const connect);
-void makeBuyingCargo(const int index,const int cargo_index,const char *const name,const int size, const int price);
-void makeSellingCargo(const int index,const int cargo_index,const char *const name,const int size, const int price);
-
-/*------------------------ macros ------------------------------*/
+#include "cities.h"
 
 /*------------------------ global vars, constants --------------*/
 
 static const size_t SIZE_TOWN = sizeof(TOWN);
 
 /*------------------------ code ------------------------------*/
-void makeSellingCargo(const int index,const int cargo_index,const char *const name,const int size, const int price) {
+static void makeSellingCargo(const int index,const int cargo_index,const char *const name,const int size, const int price) {
 	map[index]->selling[cargo_index] = malloc(SIZE_CARGO);
 	map[index]->selling[cargo_index]->name = malloc(15);
 	strcpy(map[index]->selling[cargo_index]->name,name);
@@ -27,7 +15,7 @@ void makeSellingCargo(const int index,const int cargo_index,const char *const na
 	map[index]->selling[cargo_index]->next = NULL;
 }
 
-void makeBuyingCargo(const int index,const int cargo_index,const char *const name,const int size, const int price) {
+static void makeBuyingCargo(const int index,const int cargo_index,const char *const name,const int size, const int price) {
 	map[index]->buying[cargo_index] = malloc(SIZE_CARGO);
 	map[index]->buying[cargo_index]->name = malloc(15);
 	strcpy(map[index]->buying[cargo_index]->name,name);
@@ -36,7 +24,7 @@ void makeBuyingCargo(const int index,const int cargo_index,const char *const nam
 	map[index]->buying[cargo_index]->next = NULL;
 }
 
-void makeConnections(const int index,const int size,const int *const connect) {
+static void makeConnections(const int index,const int size,const int *const connect) {
 	map[index]->connections = malloc(SIZE_CARGO * size);
 	map[index]->connection_size = size;
 	fruit(int i = 0; i < size; i++) {
@@ -44,7 +32,7 @@ void makeConnections(const int index,const int size,const int *const connect) {
 	}
 }
 
-void initTown(const int index,const int x, const int y,const char *const name) {
+static void initTown(const int index,const int x, const int y,const char *const name) {
 	map[index] = malloc(SIZE_TOWN);
 	map[index]->x = x;
 	map[index]->y = y;
@@ -59,16 +47,11 @@ void makeCities(void){
 	initTown(3,20,5,"Birmingham");
 	initTown(4,40,4,"Atlanta");
 
-	const int oxfordar[2] = {1,3};
-	makeConnections(0,2,oxfordar);
-	const int memphisar[3] = {0,2,3};
-	makeConnections(1,3,memphisar);
-	const int nashvillear[3] = {1,3,4};
-	makeConnections(2,3,nashvillear);
-	const int birminghamar[4] ={0,1,2,4};
-	makeConnections(3,4,birminghamar);
-	const int atlantaar[2] = {2,3};
-	makeConnections(4,2,atlantaar);
+	makeConnections(0,2,(int[]){1,3});       //oxford
+	makeConnections(1,3,(int[]){0,2,3});     //memphis
+	makeConnections(2,3,(int[]){1,3,4});     //nashville
+	makeConnections(3,4,(int[]){0,1,2,4});  //birmingham
+	makeConnections(4,2,(int[]){2,3});     //atlanta
 
 	//Oxford
 	makeBuyingCargo(0,0,"Beer",10,15);

@@ -1,92 +1,20 @@
 /*------------------------ headers ------------------------------*/
-#include <stdlib.h>
-#include <unistd.h>  
-#include <ncurses.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
-#include <ctype.h>  //isalpha
-#include "gamepieces.h"
-
-/*------------------------ prototypes ---------------------------*/
-void gameLoop(void);
-void initWindows(void);
-void initScreen(void);
-void takeInputMainPrompt(void);
-void buySellPrompt(void);
-void buyFuelMenu(void);
-void buyFoodPrompt(void);
-void buySleepPrompt(void);
-void viewConnections(void);
-void buySellPromptInput(void);
-void buyGoodsPrompt(void);
-void sellGoodsPrompt(void);
-void initVars(void);
-void buySellGoodsInput(void(*func)(const int choice));
-void buyGoodsCheck(const int choice);
-void buyGood(const int choice);
-void sellGood(const int choice);
-int checkIfPlayerHasGood(const int choice);
-void dontHaveGood(const int choice);
-void printTruck(const int start);
-void moveTruckForward(const int limit);
-void printTowTruck(const int start);
-void moveTowTruckBackwards(void);
-void moveTowTruckForward(void);
-void printBreakDownPrompt(void);
-void payTowTruck(void);
-int giveUpCargo(void);
-int getTowInput(void);
-int getTowCargoInput(void);
-int giveUpCargo(void);
-void promptPrint(const char *const str);
-void travelToCity(const int choice);
-void getTravelInput(void);
-void buyFuelPrompt(void);
-void buyFuel(void);
-void getFuel(const int choice);
-void printCafeMenu(void);
-void visitCafe(void);
-void printHungerPrompt(void);
-void sleepInTrcuk(void);
-void visitMotel(void);
-void printSleepPrompt(void);
-void endGame();
-int giveUpCargoCrash(void);
-void getCrashCargoInput(void);
-void getCrashInput(void);
-void crashTruck(void);
-void printCity(void);
-void delCity(void);
-void readNewsPaper(void);
-void turnOffCurs(void);
-void turnOnCurs(void);
-
-/*------------------------ macros ------------------------------*/
-#define CITY map[player_i]
-#define SELL(x) CITY->selling[x] 
-#define BUY(x) CITY->buying[x] 
-#define MAX_FUEL 50
-#define MAX_HUNGER 25
-#define MAX_SLEEP 25
-#define START_MONEY 50
-#define MAX_CARGO 50
-
+#include "main.h"
 
 /*------------------------ global vars, constants --------------*/
 
 static int continue_game = 1;
 WINDOW *truck_win,*tow_win,*prompt_win,*city_win;
-int player_i,player_money,player_sleep,player_hunger,player_fuel,player_money,cargo_space;
-int break_down = 0;
-int well_rested = 1;
-int crash_Truck = 0;
+static int player_i,player_money,player_sleep,player_hunger,player_fuel,player_money,cargo_space;
+static int break_down = 0;
+static int well_rested = 1;
+static int crash_Truck = 0;
 TOWN *map[5];
 CARGO *cargo_list;
 
 /*------------------------ code ------------------------------*/
 
-void printCity(void) {
+static void printCity(void) {
 	for(int i = 0; i < 16; i++) {
 		mvwprintw(city_win,i,0,"%s",city_pic[i]);
 	}
@@ -94,12 +22,12 @@ void printCity(void) {
 	wrefresh(city_win);
 }
 
-void delCity(void) {
+static void delCity(void) {
 	wclear(city_win);
 	wrefresh(city_win);
 }
 
-void moveTruckTowTogether(void) {
+static void moveTruckTowTogether(void) {
 	fruit(int i = 15; i >= -45; i--) {
 		wclear(truck_win);
 		wrefresh(truck_win);		
@@ -119,19 +47,19 @@ void moveTruckTowTogether(void) {
 	printCity();
 }
 
-void promptPrint(const char *const str) {
+static void promptPrint(const char *const str) {
 	wclear(prompt_win);
 	mvwprintw(prompt_win,0,0,"%s",str);
 	wrefresh(prompt_win);
 }
 
-void payTowTruck(void) {
+static void payTowTruck(void) {
 	promptPrint("you pay him $20 and he tows you into town.");
 	player_money -= 20;
 	player_fuel = MAX_FUEL;
 }
 
-int giveUpCargo(void) {
+static int giveUpCargo(void) {
 	if (cargo_list == NULL || cargo_list->next == NULL) {
 		promptPrint("you dont have enough cargo to give up.");
 		getch();
@@ -148,7 +76,7 @@ int giveUpCargo(void) {
 	}
 }
 
-int getTowInput(void) {
+static int getTowInput(void) {
 	switch(getch()) {
 		case 'y': 
 		if(player_money >= 20) {
@@ -169,7 +97,7 @@ int getTowInput(void) {
 	}
 }
 
-int getTowCargoInput(void) {
+static int getTowCargoInput(void) {
 	switch(getch()) {
 		case 'y': return giveUpCargo();
 			break;
@@ -184,7 +112,7 @@ int getTowCargoInput(void) {
 	}
 }
 
-void breakDown(void) {
+static void breakDown(void) {
 	moveTruckForward(30);
 	const char *const str = (player_fuel >= 0) ? "you broke down. luckily a tow truck is on its way." : "you ran out of gas,luckily a tow truck is on its way.";
 	promptPrint(str);
@@ -194,14 +122,14 @@ void breakDown(void) {
 	(getTowInput() == 1) ? moveTruckTowTogether() : (moveTowTruckForward(),endGame());
 }
 
-void printTruck(const int start) {
+static void printTruck(const int start) {
 	fruit(int i = 0; i < 4; i++) {
 		mvwprintw(truck_win,i,0,"%s",&truck[i][start]);
 	}
 	wrefresh(truck_win);
 }
 
-void moveTruckForward(const int limit) {
+static void moveTruckForward(const int limit) {
 	fruit(int i = 50; i >= limit; i--) {
 		wclear(truck_win);
 		wrefresh(truck_win);
@@ -213,14 +141,14 @@ void moveTruckForward(const int limit) {
 	}
 }
 
-void printTowTruck(const int start) {
+static void printTowTruck(const int start) {
 	fruit(int i = 0; i < 4; i++) {
 		mvwprintw(tow_win,i,0,"%s",&tow_truck[i][start]);
 	}
 	wrefresh(tow_win);
 }
 
-void moveTowTruckBackwards(void) {
+static void moveTowTruckBackwards(void) {
 	fruit(int i = 0; i <= 15; i++) {
 		wclear(tow_win);
 		wrefresh(tow_win);
@@ -230,7 +158,7 @@ void moveTowTruckBackwards(void) {
 	}
 }
 
-void moveTowTruckForward(void) {
+static void moveTowTruckForward(void) {
 	fruit(int i = 14; i >= -15; i--) {
 		wclear(tow_win);
 		wrefresh(tow_win);
@@ -240,14 +168,14 @@ void moveTowTruckForward(void) {
 	getch();
 }
 
-void dontHaveGood(const int choice) {
+static void dontHaveGood(const int choice) {
 	wclear(prompt_win);
 	mvwprintw(prompt_win,0,0,"sorry, but you don't have any %s",BUY(choice)->name);
 	wrefresh(prompt_win);
 	getch();
 }
 
-void sellGood(const int choice) {
+static void sellGood(const int choice) {
 	CARGO *head = cargo_list;
 	CARGO *prev = cargo_list;
 	while (head != NULL) {	
@@ -268,7 +196,7 @@ void sellGood(const int choice) {
 	return;
 } 
 
-void buyGood(const int choice) {
+static void buyGood(const int choice) {
 	CARGO *head = cargo_list;	
 	if(head==NULL) {
 		cargo_list = malloc(SIZE_CARGO);
@@ -289,7 +217,7 @@ void buyGood(const int choice) {
 	getch();
 }
 
-void buyGoodsCheck(const int choice) {
+static void buyGoodsCheck(const int choice) {
 	if(player_money < SELL(choice)->price)	{
 		promptPrint("sorry, you cant afford that. stop being poor.");
 		getch();
@@ -303,7 +231,7 @@ void buyGoodsCheck(const int choice) {
 	}
 }
 
-void buySellGoodsInput(void(*func)(const int choice)) {
+static void buySellGoodsInput(void(*func)(const int choice)) {
 	const int choice = getch() -'0';
 	switch(choice) {
 		case 1: 
@@ -318,7 +246,7 @@ void buySellGoodsInput(void(*func)(const int choice)) {
 	}
 }
 
-void buyGoodsPrompt(void) {
+static void buyGoodsPrompt(void) {
 	wclear(prompt_win);	
 	mvwprintw(prompt_win,0,0,"you have $%d and %d cargo space",player_money,cargo_space);
 	mvwprintw(prompt_win,1,0,"the city of %s is selling:",CITY->name);
@@ -328,7 +256,7 @@ void buyGoodsPrompt(void) {
 	wrefresh(prompt_win);
 }
 
-void sellGoodsPrompt(void) {
+static void sellGoodsPrompt(void) {
 	wclear(prompt_win);
 	mvwprintw(prompt_win,0,0,"the city of %s is buying:",CITY->name);
 	mvwprintw(prompt_win,1,5,"1)%s for %d dollars",BUY(0)->name,BUY(0)->price);
@@ -337,7 +265,7 @@ void sellGoodsPrompt(void) {
 	wrefresh(prompt_win);
 }
 
-void buySellPromptInput(void) {
+static void buySellPromptInput(void) {
 	switch(getch()) {
 		case '1': 
 			buyGoodsPrompt();
@@ -356,7 +284,7 @@ void buySellPromptInput(void) {
 	}
 }
 
-void buySellPrompt(void) {
+static void buySellPrompt(void) {
 	wclear(prompt_win);
 	mvwprintw(prompt_win,0,0,"would you like to:");
 	mvwprintw(prompt_win,1,5,"1)buy");
@@ -366,7 +294,7 @@ void buySellPrompt(void) {
 	buySellPromptInput();
 }
 
-void buyFuelPrompt(void) {
+static void buyFuelPrompt(void) {
 	wclear(prompt_win);
 	mvwprintw(prompt_win,0,0,"you have %d out of %d fuel.",player_fuel,MAX_FUEL);
 	mvwprintw(prompt_win,1,0,"you have $%d.",player_money);
@@ -374,7 +302,7 @@ void buyFuelPrompt(void) {
 	wrefresh(prompt_win);
 }
 
-void getFuel(const int choice) {	
+static void getFuel(const int choice) {	
 	if((2 * choice) <= (MAX_FUEL - player_fuel) && choice <= player_money) {
 		wclear(prompt_win);
 		mvwprintw(prompt_win,0,0,"you bought %d fuel for $%d",(2 * choice),choice);
@@ -399,7 +327,7 @@ void getFuel(const int choice) {
 	}
 }
 
-void buyFuel(void) {
+static void buyFuel(void) {
 	wclear(prompt_win);
 	mvwprintw(prompt_win,0,0,"$1 for 2 fuel. how much do you want to spend on fuel?");
 	turnOnCurs();
@@ -411,7 +339,7 @@ void buyFuel(void) {
 	getFuel(atoi(choice));
 }
 
-void buyFuelInput(void) {
+static void buyFuelInput(void) {
 	const int choice = getch();
 	if(choice == 'y' || choice == 'Y') {
 		buyFuel();
@@ -423,12 +351,12 @@ void buyFuelInput(void) {
 	}
 }
 
-void buyFuelMenu(void) {
+static void buyFuelMenu(void) {
 	buyFuelPrompt();
 	buyFuelInput();
 }
 
-void printCafeMenu(void) {
+static void printCafeMenu(void) {
 	wclear(prompt_win);
 	mvwprintw(prompt_win,0,0,"you visit a small cafe. you have $%d, what would you like to order:",player_money);
 	mvwprintw(prompt_win,1,5,"1)large dinner for $10.");
@@ -437,7 +365,7 @@ void printCafeMenu(void) {
 	wrefresh(prompt_win);
 }
 
-void visitCafe(void) {
+static void visitCafe(void) {
 	printCafeMenu();
 	int choice;
 	while(!isdigit((choice = getch()))) {
@@ -469,7 +397,7 @@ void visitCafe(void) {
 }
 	
 
-void printHungerPrompt(void) {
+static void printHungerPrompt(void) {
 	switch(player_hunger) {
 		case 0 ... 7: promptPrint("you are starving.");
 			break;
@@ -483,12 +411,12 @@ void printHungerPrompt(void) {
 	getch();
 }
 
-void buyFoodPrompt(void) {
+static void buyFoodPrompt(void) {
 	printHungerPrompt();
 	visitCafe();
 }
 
-void sleepInTrcuk(void) {
+static void sleepInTrcuk(void) {
 	promptPrint("would you like to sleep in your truck(y/n)?");
 	int choice;
 	while((choice = getch() )!= 'y' && choice != 'n') {
@@ -508,7 +436,7 @@ void sleepInTrcuk(void) {
 	}
 }
 
-void visitMotel(void) {
+static void visitMotel(void) {
 	promptPrint("you can sleep in the motel for $15. do you accept (y/n)?");
 	int choice;
 	while((choice = getch()) != 'y' && choice != 'n') {
@@ -534,7 +462,7 @@ void visitMotel(void) {
 	}
 }
 
-void printSleepPrompt(void) {
+static void printSleepPrompt(void) {
 	switch(player_sleep) {
 		case 0 ... 7: promptPrint("you are about to pass out");
 			break;
@@ -548,13 +476,13 @@ void printSleepPrompt(void) {
 	getch();
 }
 
-void buySleepPrompt(void) {
+static void buySleepPrompt(void) {
 	printSleepPrompt();
 	visitMotel();
 
 }
 
-void checkDistance(const int choice) {
+static void checkDistance(const int choice) {
 	const int distance = (int) sqrt(pow((CITY->x - map[choice]->x),2) + pow((CITY->y - map[choice]->y),2));
 	const int modifier = (int)(100 - ((2.5 * player_hunger) + (2.5 * player_sleep)));
 	const int dis = distance / 2;
@@ -578,7 +506,7 @@ int giveUpCargoCrash(void) {
 	}
 }
 
-void getCrashCargoInput(void) {
+static void getCrashCargoInput(void) {
 	switch(getch()) {
 		case 'y':
 			if(giveUpCargoCrash() == 1) {
@@ -609,7 +537,7 @@ void getCrashCargoInput(void) {
 	}
 }
 
-void getCrashInput(void) {
+static void getCrashInput(void) {
 	switch(getch()) {
 		case 'y':
 			if(player_money >= 35) {
@@ -634,7 +562,7 @@ void getCrashInput(void) {
 	}
 }
 
-void crashTruck(void) {
+static void crashTruck(void) {
 	moveTruckForward(30);
 	promptPrint("you crashed your truck. luckily a tow truck is on the way.");
 	getch();
@@ -643,7 +571,7 @@ void crashTruck(void) {
 	getCrashInput();
 }
 
-void travelToCity(const int choice) {
+static void travelToCity(const int choice) {
 	checkDistance(choice);
 	delCity();
 	char str[150];
@@ -664,7 +592,7 @@ void travelToCity(const int choice) {
 	getch();
 }
 
-void getTravelInput(void) {
+static void getTravelInput(void) {
 	const int choice = getch();
 	if(choice == 'n') {
 		promptPrint("you decide to stay here.");
@@ -680,7 +608,7 @@ void getTravelInput(void) {
 	}
 }
 
-void viewConnections(void) {
+static void viewConnections(void) {
 	wclear(prompt_win);
 	mvwprintw(prompt_win,0,0,"the city of %s connects to:",CITY->name);
 	int i;
@@ -692,7 +620,7 @@ void viewConnections(void) {
 	getTravelInput();
 }
 
-void readNewsPaper(void) {
+static void readNewsPaper(void) {
 	wclear(prompt_win);
 	fruit(int i = 0; i < 5; i++) {
 		mvwprintw(prompt_win,i,0,"the city of %s is buying %s and %s.",map[i]->name,map[i]->buying[0]->name,map[i]->buying[1]->name);
@@ -701,7 +629,7 @@ void readNewsPaper(void) {
 	getch();
 }
 
-void takeInputMainPrompt(void) {
+static void takeInputMainPrompt(void) {
 	switch(getch()) {
 		case '1': buySellPrompt();
 			break;
@@ -725,7 +653,7 @@ void takeInputMainPrompt(void) {
 	}
 }
 
-void displayMainPrompt(void) {
+static void displayMainPrompt(void) {
 	wclear(prompt_win);
 	mvwprintw(prompt_win,0,0,"would you like to:");
 	mvwprintw(prompt_win,1,5,"1)buy/sell goods");
@@ -738,14 +666,14 @@ void displayMainPrompt(void) {
 	wrefresh(prompt_win);
 }
 
-void gameLoop(void) {
+static void gameLoop(void) {
 	while(continue_game == 1) {
 		displayMainPrompt();
 		takeInputMainPrompt();
 	}
 }
 
-void initVars(void) {
+static void initVars(void) {
 	player_i = 0;
 	player_fuel = MAX_FUEL;
 	player_sleep = MAX_SLEEP;
@@ -755,37 +683,37 @@ void initVars(void) {
 	srandom(time(NULL));
 }
 
-void initWindows(void) {
+static void initWindows(void) {
 	truck_win = newwin(5,29,5,30);
 	tow_win = newwin(5,15,5,0);
 	prompt_win = newwin(8,70,16,20);
 	city_win = newwin(16,45,0,0);
 }
 
-void turnOffCurs(void) {
+static void turnOffCurs(void) {
 	noecho();	      //dont display key strokes
 	cbreak();	     //disable line buffering
 	curs_set(0);     //hide cursor
 }
 
-void turnOnCurs(void) {
+static void turnOnCurs(void) {
 	echo();	      
 	nocbreak();	    
 	curs_set(1);     
 }
 
-void initScreen(void) {
+static void initScreen(void) {
 	initscr();
 	turnOffCurs();
 	refresh();
 }
 
-void endGame(void) {
+static void endGame(void) {
 	promptPrint("stuck on the side of the road with no way to get to town, your career is over.");
 	continue_game = 0;
 }
 
-void retireGame(void) {
+static void retireGame(void) {
 	char str [150];
 	sprintf(str,"game over. you started with $%d and you end with $%d.",START_MONEY,player_money);
 	promptPrint(str);
