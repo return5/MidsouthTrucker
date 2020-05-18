@@ -13,3 +13,6 @@ if you decide to compile manually then you will need to include flags 'lncurses'
 
 
 ![screenshot1](/Screenshot_3.png)
+
+
+![screenshot1](/Screenshot_4.png)
